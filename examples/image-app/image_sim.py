@@ -476,7 +476,7 @@ class ImageAppServer:
 
         if verb in ("model", "/model"):
             yield "model 1: bx-1m-l2-t036 (recurrent int32)"
-            yield "model 2: bx-1m-l2-t036-hardened (recurrent int32)"
+            yield "model 2: bx-1m-l2-t036 (recurrent int32)"
             yield "model 3: bx-2m-t035 (recurrent int32)"
             yield "OK model"
             return

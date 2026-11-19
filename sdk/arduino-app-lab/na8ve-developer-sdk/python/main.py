@@ -42,8 +42,8 @@ def main() -> dict:
     recalled = mem.recall("sdk_demo", limit=4, max_hops=2)
     mem.retract(mid, retraction_class="standard")
 
-    # 3. Recurrent byte-level cognitive turn. The board's own copy of the model comes with its licence:
-    #    a board without one (or without a licence for it) reports that instead of stopping
+    # 3. Recurrent byte-level cognitive turn. A board without the model, or without a licence for it,
+    #    reports that instead of stopping
     try:
         turn_res = cog.turn("Sensor humidity is 84% at 26.4C. Next action:", max_bytes=48)
         turn = {

@@ -194,7 +194,7 @@ def build(spec: dict, payloads: pathlib.Path | None, parts: dict | None, wrong_d
             digest = bytes([digest[0] ^ 0x80]) + digest[1:]
         if not 8 <= plen <= PAYLOAD_MAX or len(digest) != 32:
             raise Refused(f"{name}: payload {plen} bytes")
-        # a licensed app's licence is the partition's last kilobyte (na8ve-devs scope-08 §4): its payload stops short
+        # a licensed app's licence is the partition's last kilobyte: its payload stops short
         room = (parts[part] - 1024 if p.get("licensed", False) else parts[part]) if parts is not None and part in parts else 0
         if parts is not None and (part not in parts or sign_pvm.HEADER + plen + sign_pvm.SIG > room):
             raise Refused(f"{name}: the payload does not fit partition {part}"

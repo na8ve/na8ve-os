@@ -124,7 +124,7 @@ python ../../tools/build_manifest.py manifest-entry.json --out dist/manifest.bin
 
 Deploy the signed payload and manifest to your target:
 
-* **Arduino Uno Q**: package the app with the Arduino App Lab SDK ([`sdk/arduino-app-lab/`](../../sdk/arduino-app-lab/README.md)) and import the `.zip` in Arduino App Lab, or click **Install via USB** on the app's card on the distribution site's **Apps** page. The App Lab app is `applab/`, built on the App Lab Bricks with its dashboard served by the WebUI brick: it asks the model broker through this sandbox, streams the answer, and scrolls it on the LED matrix through its coprocessor sketch (`applab/sketch/sketch.ino`).
+* **Arduino Uno Q**: package the app with the Arduino App Lab SDK ([`sdk/arduino-app-lab/`](../../sdk/arduino-app-lab/README.md)) and import the `.zip` in Arduino App Lab, or click **Install via USB** on the distribution site's **Apps** page. The App Lab app is `applab/`, built on the App Lab Bricks with its dashboard served by the WebUI brick: it asks the model broker through this sandbox, streams the answer, and scrolls it on the LED matrix through its coprocessor sketch (`applab/sketch/sketch.ino`).
 * **Seeed Studio XIAO ESP32-S3 Sense (pre-flashed)**: upload from the Arduino IDE with the board package ([`sdk/arduino-ide/`](../../sdk/arduino-ide/README.md)).
 
 ---

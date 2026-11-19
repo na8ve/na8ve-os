@@ -208,18 +208,15 @@ python tools/build_manifest.py examples/my-app/manifest-entry.json --out example
 ## 6. Step 5: Flash & Deploy to Target Hardware
 
 Before deploying user applications:
-- **Arduino Uno Q** can be provisioned in Chrome/Edge on the **Firmware** (`/`) page as either free **Community Beta 1M** (`na8ve-os-unoq`, `bx-1m-l2-t036` `int32` only) or **Pre-Flashed / N8LC Licensed** (`na8ve-os-unoq-preflashed`, `$69.00` licence key on BYO hardware; **1M + 2M + Vision**), or ordered ready to run in the **Shop** (`/shop`, `NA8-UNOQ-PRE` `$149.00` or `NA8-DUO-BUNDLE` `$185.00`, `10 Day Backorder`). When provisioning via the **Purchase Licence Key (`N8LC`)** flow, generate/download `app-key.pem` (`~/.na8ve/app-key.pem`) or load `pubkey.bin`, click **Buy** (`$69.00`) or attach a `1,024-byte` `.n8lc` file, enter/auto-detect MAC, click **Connect & install**, and click **Save minted `.n8lc`**.
-- **Seeed Studio XIAO ESP32-S3 Sense** has **no public browser WebSerial OS flasher**. It is offered **only as a Pre-Flashed ESP32 product (`NA8-XIAO-S3-PRE`, `$49.00`, `10 Day Backorder`; or inside `NA8-DUO-BUNDLE`, `$185.00`)** in the **Shop** with its signed runtime and models factory-installed.
+- **Arduino Uno Q:** install na8ve-os from the **Firmware** page of the distribution site, **Community** (free, through a free checkout) or **Pre-Flashed** (licensed), or order a pre-flashed board from the **Shop**. Load your public key when you license the board so it runs the apps you sign.
+- **Seeed Studio XIAO ESP32-S3 Sense:** na8ve-os comes only on pre-flashed hardware from the **Shop**.
 
-Once the board OS is ready, deploy your compiled `.n8pv` app package with **Arduino App Lab** (`sdk/arduino-app-lab/`), **Arduino IDE** (`sdk/arduino-ide/`), or the Web Distribution Portal **Apps** menu (`/apps`):
+Once the board runs na8ve-os, deploy your app with **Arduino App Lab** (`sdk/arduino-app-lab/`), **Arduino IDE** (`sdk/arduino-ide/`), or the distribution site's **Apps** page.
 
-### One-Click USB Installation via the Web Apps Portal (`/apps`)
-Pre-packaged SDK applications (`na8ve-developer-sdk`, `matrix-app`, `greenhouse-app`, `image-app`, `broker-app` for Uno Q; and `na8ve-developer-sdk-esp32`, `greenhouse-agent-esp32`, `hello-app-esp32`, `broker-app-esp32` for ESP32-S3), along with standalone desktop operator tools (`na8ve-tui`, `na8ve-vision`, `na8ve-console`), can be installed and downloaded directly from the browser:
-1. Navigate to the **Apps** tab on the distribution portal (`/apps`).
-2. Use the **same-row filter tabs & search bar** to filter by target platform (**Arduino Uno Q · App Lab**, **XIAO ESP32-S3 · Arduino IDE**, or **Desktop Tools**).
-3. Review the **Hardware Specification Banner** on each card for target silicon architecture and isolation mode.
-4. Connect your board via USB and click **Install via USB** (positioned directly above the **Package** download button).
-5. The web flasher deploys exclusively into the isolated user application sandbox (`Stage-2 MicroVM` on Uno Q; `Hardware Isolated` user slot on ESP32-S3). **Base OS firmware, bootloader, and neural model partitions are never overwritten.** The app executes automatically upon reboot.
+### Installing an Example App from the Apps Page
+1. Open the **Apps** page and choose the app for your board.
+2. Connect the board over USB and click **Install via USB**.
+3. Only the app's own sandbox is written; na8ve-os and its models are left as they are.
 
 ### Target: Arduino Uno Q (Qualcomm QRB2210)
 Package your app with the Arduino App Lab SDK ([`sdk/arduino-app-lab/`](../../sdk/arduino-app-lab/README.md)) and import the resulting `.zip` in Arduino App Lab with **Import App**. App Lab places `pvm/app.n8pv` and `pvm/manifest.bin` in the app's sandbox; the na8ve-os firmware is installed only from the distribution site's **Firmware** page.

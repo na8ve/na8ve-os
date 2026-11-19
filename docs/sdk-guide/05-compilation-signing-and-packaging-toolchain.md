@@ -108,7 +108,7 @@ python tools/sign_pvm.py sign \
   my_app.n8pv
 ```
 
-On the distribution site's **Firmware** (`/`) tab, selecting **`na8ve-os · Uno Q (Pre-Flashed)`** (`$69.00` `N8LC` licence on BYO board, or shipped pre-bound on `NA8-UNOQ-PRE` `$149.00` / `NA8-DUO-BUNDLE` `$185.00`) binds `~/.na8ve/app-key.pub.bin` into `/etc/na8ve-os/` alongside your `1,024-byte` MAC-bound `.n8lc` licence so `pvmfw` trusts modules signed by `~/.na8ve/app-key.pem`. Seeed XIAO ESP32-S3 Sense is distributed exclusively via the **Shop** (`NA8-XIAO-S3-PRE`, `$49.00`, `10 Day Backorder`) with base firmware and neural models pre-flashed; pair your key once over USB before uploading `.n8pv` sketches.
+When you license an Arduino Uno Q on the distribution site's **Firmware** page with your public key loaded, the board's licence names that key, so the board runs modules you sign with `~/.na8ve/app-key.pem`. On a pre-flashed XIAO ESP32-S3 Sense, pair your key once over USB before uploading `.n8pv` sketches.
 
 ---
 
@@ -149,19 +149,3 @@ python tools/build_manifest.py \
   --out build/manifest.bin \
   --partitions firmware/os/partitions.csv
 ```
-
----
-
-## 5. Automated Build via `tools/build_pvm.py`
-
-To compile, strip, and sign all pVM applications in a single automated step:
-
-```bash
-# Set environment variable pointing to external app list
-export CX_PVM_APPS='[{"name": "my_app", "src": "examples/my-app", "max_memory": 65536, "stack": 8192}]'
-
-# Run automated builder
-python tools/build_pvm.py --out build/payloads --harden
-```
-This builds each application, applies symbol obfuscation (`harden_pvm.py`), signs the resulting binaries with `sign_pvm.py`, and writes ready-to-flash `.n8pv` files.
-

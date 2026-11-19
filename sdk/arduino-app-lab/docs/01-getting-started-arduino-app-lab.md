@@ -28,7 +28,7 @@ my-first-app/
     └── sketch.yaml     # Board platform & Arduino_RouterBridge libraries
 ```
 
-> **Zero-Leak Rule:** Author your C sandbox locally using `pvm/n8_sdk.h`, `pvm/*.c`, and `pvm/manifest.json`. Always build archives with `tools/na8ve_applab_tool.py pack`, which compiles `pvm/app.n8pv` + `pvm/manifest.bin` and strips all `.c`, `.h`, `.wasm`, private keys, and `manifest.json` files from the `.zip`. On paired hardware, both `app.n8pv` and its matching `manifest.bin` are strictly required at runtime.
+> **Keep your sources local:** Author your C sandbox locally using `pvm/n8_sdk.h`, `pvm/*.c`, and `pvm/manifest.json`. Always build archives with `tools/na8ve_applab_tool.py pack`, which compiles `pvm/app.n8pv` + `pvm/manifest.bin` and strips all `.c`, `.h`, `.wasm`, private keys, and `manifest.json` files from the `.zip`. On paired hardware, both `app.n8pv` and its matching `manifest.bin` are strictly required at runtime.
 
 ---
 

@@ -4,7 +4,6 @@
 
 menu.grants=na8ve-os Capability Grants
 menu.target_slot=Target Deployment Slot
-menu.harden=Release Optimization
 
 # ------------------------------------------------------------------------------
 # Seeed XIAO ESP32-S3 Sense (na8ve-os)
@@ -55,8 +54,4 @@ xiao_esp32s3_na8ve.menu.target_slot.pvm1_flash=On-Chip App Slot (Standard)
 xiao_esp32s3_na8ve.menu.target_slot.pvm1_flash.upload.slot_flag=--slot=pvm_1
 
 # Menu 3: Release Optimization
-xiao_esp32s3_na8ve.menu.harden.enabled=Enabled (Size + Integrity Optimization)
-xiao_esp32s3_na8ve.menu.harden.enabled.build.harden_flags=--harden
-xiao_esp32s3_na8ve.menu.harden.dev_fast=Fast Dev Build (Strip Metadata Only)
-xiao_esp32s3_na8ve.menu.harden.dev_fast.build.harden_flags=--strip-only
 

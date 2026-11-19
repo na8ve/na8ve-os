@@ -26,7 +26,6 @@ This SDK contains only the application-side compiler wrapper, Arduino API header
    - **Arduino IDE 2.x** (or `arduino-cli`)
    - **Python 3.10+** on `PATH` with `cryptography` and `pyserial` (`pip install cryptography pyserial`)
    - **Zig (`0.13.x`)** on `PATH` (for compiling sketches to `wasm32-freestanding`)
-   - *(Optional, when hardening is enabled in Arduino IDE)* Binaryen `wasm-opt` / `wasm-tools` on `PATH` (or `NA8VE_WASM_OPT` / `NA8VE_WASM_TOOLS`)
 2. Copy [packages/na8ve](packages/na8ve) into your local Arduino packages directory:
    - **Windows**: `%LOCALAPPDATA%\Arduino15\packages\na8ve` (`platform.txt` currently uses Windows `.cmd` tool wrappers)
    - *(Note for macOS / Linux)*: Place under `~/Library/Arduino15/packages/na8ve` or `~/.arduino15/packages/na8ve` and adapt the `.cmd` wrappers in `platform.txt` to invoke Python directly.
@@ -62,13 +61,10 @@ In addition to custom sketch development, pre-built, cryptographically signed st
 - **`hello-app-esp32`** (`Minimal Standalone Sandbox`) — Minimal latency benchmark and ping/echo verification service.
 - **`broker-app-esp32`** (`Edge IPC Query Coordinator`) — Text generation query forwarder to onboard System 2 model broker (`cortex-mvp`).
 
-### Apps Portal Features & Zero Base-Firmware Overwrite Policy
+### Installing from the Apps Page
 
-On the web distribution site (`/apps`):
-- **Live Search & Filter Tabs in Same Row**: Filter specifically by `XIAO ESP32-S3 · Arduino IDE` with the filter tabs and search bar locked to the same horizontal row.
-- **Hardware Specifications**: Each card highlights the `Espressif ESP32-S3R8 (Xtensa LX7 @ 240 MHz, 8MB PSRAM, OV2640, PDM mic)` target with the `XTENSA LX7` badge.
-- **Action Hierarchy**: Click **Install via USB** directly above the **Package** download button to flash the `.n8pv` payload straight from Chrome or Edge.
-- **Never touch or overwrite the base firmware**: Only the dedicated isolated user application sandbox is written. The operating system and its models remain completely untouched.
+- Click **Install via USB** on the app to install it from Chrome or Edge.
+- **The base firmware is never touched**: only the app's own sandbox is written. The operating system and its models remain as they are.
 - **Zero License Fee**: All standalone SDK applications are 100% free and open-source.
 - **Instant Launch on Boot**: Once deployed to the user application sandbox via the browser USB flasher or `esptool.py`, the application automatically boots into sandboxed execution upon device power-up or reset.
 

@@ -30,6 +30,6 @@ python ../../tools/build_app.py --name ask --src ask.c --model-client --out dist
 
 ## Arduino Uno Q (Arduino App Lab)
 
-`applab/` is this example as an Arduino App Lab app, built on the App Lab Bricks (`arduino:web_ui`, `na8ve:cognitive_os`, `na8ve:memory_graph`). Install it with **Install via USB** on the app's card on the distribution site's **Apps** page, or package it with the Arduino App Lab SDK ([`sdk/arduino-app-lab/`](../../sdk/arduino-app-lab/README.md)) and import the `.zip` in Arduino App Lab. It runs on a board with the free licence.
+`applab/` is this example as an Arduino App Lab app, built on the App Lab Bricks (`arduino:web_ui`, `na8ve:cognitive_os`, `na8ve:memory_graph`). Install it with **Install via USB** on the distribution site's **Apps** page, or package it with the Arduino App Lab SDK ([`sdk/arduino-app-lab/`](../../sdk/arduino-app-lab/README.md)) and import the `.zip` in Arduino App Lab. It runs on a board with the free licence.
 
 `python/main.py` admits this sandbox, asks the model broker a question through it (op `0x10`), reads the answer back (op `0x11`), and serves the dashboard through the WebUI brick on port 7000, whose chat asks the same model.

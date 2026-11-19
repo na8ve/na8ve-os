@@ -131,7 +131,7 @@ Once connected in the TUI (`na8ve-tui`):
 
 ## Arduino Uno Q (Arduino App Lab)
 
-`applab/` is this example as an Arduino App Lab app, built on the App Lab Bricks (`arduino:web_ui`, `na8ve:cognitive_os`, `na8ve:memory_graph`, `na8ve:act_policy`). Install it with **Install via USB** on the app's card on the distribution site's **Apps** page, or package it with the Arduino App Lab SDK ([`sdk/arduino-app-lab/`](../../sdk/arduino-app-lab/README.md)) and import the `.zip` in Arduino App Lab. It runs on a board with the free licence.
+`applab/` is this example as an Arduino App Lab app, built on the App Lab Bricks (`arduino:web_ui`, `na8ve:cognitive_os`, `na8ve:memory_graph`, `na8ve:act_policy`). Install it with **Install via USB** on the distribution site's **Apps** page, or package it with the Arduino App Lab SDK ([`sdk/arduino-app-lab/`](../../sdk/arduino-app-lab/README.md)) and import the `.zip` in Arduino App Lab. It runs on a board with the free licence.
 
 - `python/main.py` admits this sandbox, sends it a sensor tick (op `0x20`; on a hot, humid, dry reading the sandbox proposes `act target=fan state=high` and `act target=mister state=on`, which the board's actuator policy table decides), asks the board's model about the same reading, and serves the dashboard through the WebUI brick on port 7000.
 - `sketch/sketch.ino` is the STM32U585 sketch. The LED matrix shows what the dashboard shows: the app follows the dashboard's own stream and sends the matrix a line whenever it changes (the reading, each actuator's state, and the policy table's audit count), which scrolls until the next one.

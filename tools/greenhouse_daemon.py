@@ -237,7 +237,7 @@ class GreenhouseEnvironment:
 
     def __init__(self):
         self.lock = threading.Lock()
-        # Initial environmental state matching baseline Hackster / Demo runs
+        # Initial environmental state matching the baseline demo runs
         self.temp_c = 26.4
         self.humidity_pct = 84.2
         self.soil_adc = 1140  # <1200 = dry rootzone trigger threshold

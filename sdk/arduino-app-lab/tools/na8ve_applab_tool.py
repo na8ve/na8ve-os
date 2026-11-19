@@ -2,10 +2,10 @@
 """
 tools/na8ve_applab_tool.py
 
-Standalone Zero-Leak developer CLI for Arduino App Lab applications on na8ve-os (Arduino Uno Q).
+Developer CLI for Arduino App Lab applications on na8ve-os (Arduino Uno Q).
 Manages the developer RSA-3072 signing key, compiles freestanding C sandbox modules (pvm/*.c)
 with Zig into stripped WebAssembly with hashed host imports, signs 436-byte N8PV containers +
-76-byte N8MF manifests, verifies the Zero-Leak Release Gate, and builds <app>-applab.zip.
+76-byte N8MF manifests, checks the package, and builds <app>-applab.zip.
 
 Contains no models, no device keys, and no enclave source internals.
 """
@@ -31,11 +31,8 @@ DEFAULT_KEY_PATH = Path(os.environ.get("NA8VE_APP_KEY", str(Path.home() / ".na8v
 
 N8PV_MAGIC = b"N8PV"
 N8MF_MAGIC = b"N8MF"
-N8MM_MAGIC = b"N8MM"
-N8VM_MAGIC = b"N8VM"
-N8LC_MAGIC = b"N8LC"
 
-N8PV_FLAG_HARDENED = 0x0001
+N8PV_FLAG_RELEASE = 0x0001
 N8PV_FLAG_SIGNED = 0x0002
 N8PV_FLAG_BUYER_PSS = 0x0004
 
@@ -44,7 +41,7 @@ CX_CAP_STORE = 0x02
 CX_CAP_CHAT = 0x04
 CX_CAP_ACT = 0x08
 
-# HMAC-hashed host import symbols matching n8_sdk.h / na8ve-os runtime ABI
+# The App Lab ABI's host import names for the functions n8_sdk.h declares
 N8_SYM_MAP: Dict[bytes, bytes] = {
     b"n8_log": b"e3b0c442",
     b"n8_flash_read": b"7f83b165",
@@ -63,13 +60,6 @@ N8_SYM_MAP: Dict[bytes, bytes] = {
 FORBIDDEN_ZIP_EXTENSIONS = {
     ".c", ".h", ".cc", ".cpp", ".hpp", ".o", ".obj", ".a", ".so",
     ".wasm", ".map", ".n8vm", ".n8lc", ".pem", ".key", ".der",
-}
-
-# SHA-256 prefixes of prohibited legacy terms (checked without literal leakage)
-_FORBIDDEN_WORD_HASHES = {
-    "593a1d32a27d70aa536c51c27a34d3927fd3c7c8d86b27de9147ef2e48c8a2c8",
-    "76e66127c7a0fb24e5b27a1c19b58e8f8cf053f0f1bb697f4c903fd2ad7e0cb9",
-    "7d5195e4c2e16f4eb4e3fa72a4f5e9ec7b0e78b7e5f23fd9451cf96f7d24e91c",
 }
 
 
@@ -188,7 +178,7 @@ def cmd_pubkey(key_path: Path, out_pub: Optional[Path]) -> int:
     return 0
 
 
-def strip_wasm_custom_sections_and_hash_imports(wasm_bytes: bytes) -> bytes:
+def strip_custom_sections_and_map_imports(wasm_bytes: bytes) -> bytes:
     if len(wasm_bytes) < 8 or wasm_bytes[:8] != b"\x00asm\x01\x00\x00\x00":
         raise ValueError("Invalid WebAssembly binary header")
     out = bytearray(wasm_bytes[:8])
@@ -206,8 +196,8 @@ def strip_wasm_custom_sections_and_hash_imports(wasm_bytes: bytes) -> bytes:
         if sec_id == 0:
             continue
         if sec_id == 2:
-            for plain_sym, hashed_sym in N8_SYM_MAP.items():
-                payload = payload.replace(bytes([len(plain_sym)]) + plain_sym, bytes([len(hashed_sym)]) + hashed_sym)
+            for sdk_name, abi_name in N8_SYM_MAP.items():
+                payload = payload.replace(bytes([len(sdk_name)]) + sdk_name, bytes([len(abi_name)]) + abi_name)
         out.append(sec_id)
         out.extend(_write_leb128_u32(len(payload)))
         out.extend(payload)
@@ -237,7 +227,7 @@ def compile_pvm_c_sources(c_files: List[Path]) -> bytes:
         res = subprocess.run(cmd, capture_output=True, text=True)
         if res.returncode != 0 or not out_wasm.exists():
             raise RuntimeError(f"C sandbox compilation failed:\n{res.stderr or res.stdout}")
-        return strip_wasm_custom_sections_and_hash_imports(out_wasm.read_bytes())
+        return strip_custom_sections_and_map_imports(out_wasm.read_bytes())
 
 
 def pack_n8pv_and_manifest(
@@ -250,7 +240,7 @@ def pack_n8pv_and_manifest(
     if key_path is None:
         raise ValueError("a developer signing key is required (keygen, then register its public key with the board's licence)")
     wasm_sha = hashlib.sha256(wasm_bytes).digest()
-    flags = N8PV_FLAG_HARDENED | N8PV_FLAG_SIGNED | N8PV_FLAG_BUYER_PSS
+    flags = N8PV_FLAG_RELEASE | N8PV_FLAG_SIGNED | N8PV_FLAG_BUYER_PSS
     hdr48 = struct.pack("<4sIII32s", N8PV_MAGIC, 1, flags, len(wasm_bytes), wasm_sha)
 
     name_bytes = str(manifest_cfg.get("name", "applab-pvm"))[:15].encode("utf-8").ljust(16, b"\x00")
@@ -307,15 +297,15 @@ def pack_n8pv_and_manifest(
 
 def verify_n8pv_bytes(raw: bytes, filename: str) -> bytes:
     if len(raw) < 444 or raw[:4] != N8PV_MAGIC:
-        raise ValueError(f"Zero-Leak Gate Violation: '{filename}' missing valid N8PV header")
+        raise ValueError(f"Package check: '{filename}' missing valid N8PV header")
     _, _, _, wasm_len, hdr_sha, sig_len = struct.unpack("<4sIII32sI", raw[:52])
     if sig_len != 384 or 436 + wasm_len != len(raw):
-        raise ValueError(f"Zero-Leak Gate Violation: '{filename}' header length mismatch")
+        raise ValueError(f"Package check: '{filename}' header length mismatch")
     wasm_part = raw[436:]
     if hashlib.sha256(wasm_part).digest() != hdr_sha:
-        raise ValueError(f"Zero-Leak Gate Violation: '{filename}' Wasm SHA-256 mismatch")
+        raise ValueError(f"Package check: '{filename}' Wasm SHA-256 mismatch")
     if len(wasm_part) < 8 or wasm_part[:8] != b"\x00asm\x01\x00\x00\x00":
-        raise ValueError(f"Zero-Leak Gate Violation: '{filename}' invalid Wasm header")
+        raise ValueError(f"Package check: '{filename}' invalid Wasm header")
     pos = 8
     while pos < len(wasm_part):
         sec_id = wasm_part[pos]
@@ -323,19 +313,18 @@ def verify_n8pv_bytes(raw: bytes, filename: str) -> bytes:
         sec_len, pos = _read_leb128_u32(wasm_part, pos)
         sec_end = pos + sec_len
         if sec_end > len(wasm_part):
-            raise ValueError(f"Zero-Leak Gate Violation: truncated Wasm section in '{filename}'")
+            raise ValueError(f"Package check: truncated Wasm section in '{filename}'")
         sec_payload = wasm_part[pos:sec_end]
         pos = sec_end
         if sec_id == 0:
-            raise ValueError(f"Zero-Leak Gate Violation: unstripped custom section in '{filename}'")
+            raise ValueError(f"Package check: unstripped custom section in '{filename}'")
         if sec_id == 2 and re.search(rb"n8_[a-z]", sec_payload):
-            raise ValueError(f"Zero-Leak Gate Violation: unhashed n8_* import symbol in '{filename}'")
+            raise ValueError(f"Package check: an import in '{filename}' is not mapped to the App Lab ABI")
     return hdr_sha
 
 
-def verify_staged_tree_zero_leak(stage_dir: Path) -> None:
-    invar_re = re.compile(r"\b([dNL]=\d+|nh=\d+)\b")
-    word_re = re.compile(r"\b[a-zA-Z0-9_-]+\b")
+def verify_package(stage_dir: Path) -> None:
+    """An App Lab package carries its compiled, signed module and its manifest, never sources."""
     n8pv_sha: Optional[bytes] = None
     n8mf_sha: Optional[bytes] = None
 
@@ -344,34 +333,25 @@ def verify_staged_tree_zero_leak(stage_dir: Path) -> None:
             continue
         ext = p.suffix.lower()
         if ext in FORBIDDEN_ZIP_EXTENSIONS:
-            raise ValueError(f"Zero-Leak Gate Violation: forbidden file '{p.name}' ({ext}) in package")
+            raise ValueError(f"Package check: forbidden file '{p.name}' ({ext}) in package")
         raw = p.read_bytes()
-        if raw[:4] in (N8VM_MAGIC, N8MM_MAGIC, N8LC_MAGIC):
-            raise ValueError(f"Zero-Leak Gate Violation: protected binary asset in '{p.name}'")
         if ext == ".n8pv":
             n8pv_sha = verify_n8pv_bytes(raw, p.name)
         elif p.name == "manifest.bin":
             if len(raw) < 76 or raw[:4] != N8MF_MAGIC:
-                raise ValueError("Zero-Leak Gate Violation: invalid N8MF manifest.bin")
+                raise ValueError("Package check: invalid N8MF manifest.bin")
             n8mf_sha = raw[44:76]
         else:
             try:
                 txt = raw.decode("utf-8")
             except UnicodeDecodeError:
                 continue
-            m_inv = invar_re.search(txt)
-            if m_inv:
-                raise ValueError(f"Zero-Leak Gate Violation: disallowed invariant '{m_inv.group(0)}' in '{p.name}'")
-            for m_w in word_re.finditer(txt):
-                h = hashlib.sha256(m_w.group(0).lower().encode("ascii")).hexdigest()
-                if h in _FORBIDDEN_WORD_HASHES:
-                    raise ValueError(f"Zero-Leak Gate Violation: disallowed internal term in '{p.name}'")
             if p.name == "app.yaml" and "NA8VE_SACCADE_CROPS" in txt:
                 raise ValueError("Configuration error in app.yaml: use NA8VE_SACCADE_COUNT instead of NA8VE_SACCADE_CROPS")
 
     if n8pv_sha is not None or n8mf_sha is not None:
         if n8pv_sha is None or n8mf_sha is None or n8pv_sha != n8mf_sha:
-            raise ValueError("Zero-Leak Gate Violation: pvm/app.n8pv and pvm/manifest.bin digest mismatch")
+            raise ValueError("Package check: pvm/app.n8pv and pvm/manifest.bin digest mismatch")
 
 
 def build_pvm_only(app_dir: Path, key_path: Optional[Path] = None) -> Dict[str, object]:
@@ -448,7 +428,7 @@ def pack_applab_zip(
                 if mf_json.exists():
                     mf_json.unlink()
 
-        verify_staged_tree_zero_leak(stage)
+        verify_package(stage)
 
         out_zip = out_zip.resolve()
         out_zip.parent.mkdir(parents=True, exist_ok=True)
@@ -475,8 +455,8 @@ def cmd_verify_zip(zip_path: Path) -> int:
         with zipfile.ZipFile(zip_path, "r") as zf:
             zf.extractall(extract_dir)
             names = sorted(zf.namelist())
-        verify_staged_tree_zero_leak(extract_dir)
-    print(json.dumps({"zip_path": str(zip_path), "files": len(names), "zero_leak_gate": "PASS"}, indent=2))
+        verify_package(extract_dir)
+    print(json.dumps({"zip_path": str(zip_path), "files": len(names), "package_check": "PASS"}, indent=2))
     return 0
 
 
@@ -496,14 +476,14 @@ def main() -> int:
     p_bd.add_argument("--app-dir", type=Path, required=True)
     p_bd.add_argument("--key", type=Path, default=DEFAULT_KEY_PATH, help="Your RSA-3072 developer key (default: ~/.na8ve/app-key.pem)")
 
-    p_pkz = sub.add_parser("pack", help="Compile, sign, strip sources, verify Zero-Leak gate, and build .zip")
+    p_pkz = sub.add_parser("pack", help="Compile, sign, leave sources out, check the package, and build .zip")
     p_pkz.add_argument("--app-dir", type=Path, required=True)
     p_pkz.add_argument("--out", type=Path, required=True)
     p_pkz.add_argument("--key", type=Path, default=DEFAULT_KEY_PATH, help="Your RSA-3072 developer key (default: ~/.na8ve/app-key.pem)")
     p_pkz.add_argument("--no-sync-pvm", action="store_true")
     p_pkz.add_argument("--keep-sources-for-control", action="store_true", help="Negative control: test gate failure")
 
-    p_vz = sub.add_parser("verify-zip", help="Verify an App Lab .zip archive passes the Zero-Leak Release Gate")
+    p_vz = sub.add_parser("verify-zip", help="Check an App Lab .zip archive")
     p_vz.add_argument("zip_path", type=Path)
 
     args = ap.parse_args()

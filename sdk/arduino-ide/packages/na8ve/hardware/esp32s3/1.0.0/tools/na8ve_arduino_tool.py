@@ -4,7 +4,7 @@ for the na8ve:esp32s3 Arduino IDE Boards Manager package.
 
 Commands:
   build-pvm   Enforces capability policy, runs optional host test + control,
-              strips metadata sections, optimizes/hardens, signs .n8pv, and writes bundle ZIP.
+              strips metadata sections, signs .n8pv, and writes bundle ZIP.
   size        Reports PROGRAM_BYTES and DATA_BYTES for Arduino IDE / arduino-cli.
   export-zip  Copies compiled .n8pv and submission .zip into the sketch folder.
   pair        Associates a developer board identity with the local signing key.
@@ -30,7 +30,6 @@ _PARENT = TOOLS_DIR.parent
 PLATFORM_DIR = _PARENT if (_PARENT / "cores").exists() else (_PARENT / "arduino-core" / "na8ve" / "esp32s3" / "1.0.0")
 sys.path.insert(0, str(TOOLS_DIR))
 
-import harden_pvm  # noqa: E402
 import licence     # noqa: E402
 import sign_pvm    # noqa: E402
 
@@ -64,6 +63,24 @@ def _read_leb_s32(b: bytes, p: int) -> tuple[int, int]:
             if byte & 0x40 and shift < 64:
                 res -= 1 << shift
             return res, p
+
+
+def strip_custom_sections(wasm_bytes: bytes) -> bytes:
+    """Drop every custom (id 0) section (names, producers, debug info); keep the rest as it is."""
+    if len(wasm_bytes) < 8 or wasm_bytes[:4] != b"\x00asm" or wasm_bytes[4:8] != b"\x01\x00\x00\x00":
+        raise ValueError("not a valid WebAssembly 1.0 module")
+    out = bytearray(wasm_bytes[:8])
+    p = 8
+    while p < len(wasm_bytes):
+        start = p
+        sec_id = wasm_bytes[p]
+        sec_len, body = _read_leb_u32(wasm_bytes, p + 1)
+        p = body + sec_len
+        if p > len(wasm_bytes):
+            raise ValueError("truncated WebAssembly section")
+        if sec_id != 0:
+            out += wasm_bytes[start:p]
+    return bytes(out)
 
 
 def inspect_wasm(wasm_bytes: bytes) -> dict:
@@ -376,21 +393,12 @@ def cmd_build_pvm(args: argparse.Namespace) -> int:
         sys.stderr.write(f"na8ve-arduino-tool: host test gate refused: {e}\n")
         return 1
 
-    # Gate 3: Strip metadata sections, optimize WebAssembly, and harden
-    if args.harden:
-        hardened_bytes, _rep = harden_pvm.harden(
-            raw_bytes,
-            passes=args.harden_passes,
-            seed=args.seed,
-            require_mutate=False,
-            optimize_ir=True,
-        )
-    else:
-        hardened_bytes, _dropped = harden_pvm.strip_custom(raw_bytes)
+    # Gate 3: Strip metadata (custom) sections
+    clean_bytes = strip_custom_sections(raw_bytes)
 
-    post_info = inspect_wasm(hardened_bytes)
+    post_info = inspect_wasm(clean_bytes)
     if post_info["custom_sections"] != 0:
-        sys.stderr.write("na8ve-arduino-tool: custom sections remained after hardening\n")
+        sys.stderr.write("na8ve-arduino-tool: custom sections remained after stripping\n")
         return 1
 
     # Gate 4: Sign .n8pv application container
@@ -403,7 +411,7 @@ def cmd_build_pvm(args: argparse.Namespace) -> int:
         )
         return 1
     key = sign_pvm.load_key(key_path)
-    n8pv_bytes = sign_pvm.sign_bytes(key, hardened_bytes, clean_name)
+    n8pv_bytes = sign_pvm.sign_bytes(key, clean_bytes, clean_name)
     if len(n8pv_bytes) > MAX_APP_PAYLOAD:
         sys.stderr.write(
             f"na8ve-arduino-tool: signed payload {len(n8pv_bytes)} B exceeds app ceiling {MAX_APP_PAYLOAD} B\n"
@@ -433,8 +441,8 @@ def cmd_build_pvm(args: argparse.Namespace) -> int:
         receipt = {
             "name": clean_name,
             "raw_wasm_bytes": len(raw_bytes),
-            "hardened_wasm_bytes": len(hardened_bytes),
-            "hardened_wasm_sha256": hashlib.sha256(hardened_bytes).hexdigest(),
+            "wasm_bytes": len(clean_bytes),
+            "wasm_sha256": hashlib.sha256(clean_bytes).hexdigest(),
             "n8pv_bytes": len(n8pv_bytes),
             "n8pv_sha256": hashlib.sha256(n8pv_bytes).hexdigest(),
             "custom_sections": post_info["custom_sections"],
@@ -451,7 +459,7 @@ def cmd_build_pvm(args: argparse.Namespace) -> int:
                         zf.write(f, arcname=f.name)
 
     print(
-        f"na8ve-arduino-tool: built {out_path.name} ({len(n8pv_bytes)} B, wasm={len(hardened_bytes)} B, "
+        f"na8ve-arduino-tool: built {out_path.name} ({len(n8pv_bytes)} B, wasm={len(clean_bytes)} B, "
         f"custom_sections=0, grants={grants_csv})"
     )
     return 0
@@ -661,10 +669,6 @@ def main() -> int:
     bp.add_argument("--linear", type=int, default=65536)
     bp.add_argument("--stack", type=int, default=8192)
     bp.add_argument("--budget-ms", type=int, default=2000)
-    bp.add_argument("--harden", action="store_true")
-    bp.add_argument("--strip-only", action="store_true")
-    bp.add_argument("--harden-passes", type=int, default=4)
-    bp.add_argument("--seed", type=lambda x: int(x, 0), default=0x6E385056)
     bp.add_argument("--key", default=str(DEFAULT_KEY))
     bp.add_argument("--out", required=True)
     bp.add_argument("--zip-out", default="")

@@ -78,11 +78,11 @@ To develop apps using the SDK, the following toolchain components are required:
 | **Host C Compiler** | MinGW `cc` (Windows) or GCC/Clang (Linux) | Compiles native host unit tests (`test_*.c`). |
 | **Operator Keystore** | RSA-3072-PSS PEM (`~/.na8ve/app-key.pem`) | Generated via `Generate & download app-key.pem` in the browser **Purchase Licence Key (N8LC)** panel or `tools/na8ve_applab_tool.py keygen`; kept strictly outside repositories. |
 
-### Distribution Site Acquisition & Target Provisioning
+### Getting na8ve-os on a Board
 
-* **Shop (`/shop` — `10 Day Backorder`):** Order factory pre-flashed hardware: **`NA8-UNOQ-PRE`** (`$149.00`, free US ground), **`NA8-XIAO-S3-PRE`** (`$49.00`, `$9.00` US ground under `$100`; **XIAO ESP32-S3 Sense is available only as this Pre-Flashed ESP32 product**), or **`NA8-DUO-BUNDLE`** (`$185.00`, save `$13.00`, free US ground).
-* **Firmware (`/`) & `N8LC` Licensing:** Arduino Uno Q owners can install free **Community Beta (`na8ve-os-unoq`, 1M Master only)** or upgrade/provision **`na8ve-os-unoq-preflashed`** (`$69.00` licence key on BYO hardware; **1M + 2M + Vision**) using the **Purchase Licence Key (`N8LC`)** flow, which binds your checkout session, board MAC, and delegated RSA-3072 public key into `/etc/na8ve-os/`.
-* **Apps (`/apps`):** One-click browser USB installation of pre-packaged, cryptographically signed standalone SDK applications (`na8ve-developer-sdk`, `matrix-app`, `greenhouse-app`, `image-app`, `broker-app`, `hello-app`) directly into isolated user application sandboxes without touching base OS firmware or model partitions, featuring same-row filter & search controls, hardware microarchitecture specification banners, and top-down action buttons, plus direct native binary downloads for Desktop Tools (`na8ve-tui`, `na8ve-vision`, `na8ve-console` for Windows x64, Linux x86_64, and macOS Apple Silicon).
+* **Arduino Uno Q:** install na8ve-os from the **Firmware** page of [dev.na8ve.com](https://dev.na8ve.com): **Community** (free, the 1M model, through a free checkout) or **Pre-Flashed** (the 1M, 2M and Vision models, with a paid board licence). See the main README, *Getting na8ve-os, the Apps, and a Board Licence*.
+* **Seeed Studio XIAO ESP32-S3 Sense:** na8ve-os comes only on pre-flashed hardware from the **Shop**.
+* **Apps:** the **Apps** page installs the example apps on a board over USB, without touching na8ve-os or its models.
 
 ### Quick Environment Check
 ```bash

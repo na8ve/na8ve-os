@@ -44,16 +44,16 @@ recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -D
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{archive_file_path}" "{object_file}"
 
 # ------------------------------------------------------------------------------
-# Combine Recipe: Produces unhardened {build.project_name}.raw.wasm
+# Combine Recipe: Produces {build.project_name}.raw.wasm
 # Note: arduino-cli checks for {build.path}/{build.project_name}.elf or .bin
 # so we also copy the signed .n8pv to .elf for IDE size reporting
 # ------------------------------------------------------------------------------
 recipe.c.combine.pattern="{compiler.path}{compiler.ld.cmd}" {compiler.ld.flags} {object_files} "{build.path}/{archive_file}" -o "{build.path}/{build.project_name}.raw.wasm"
 
 # ------------------------------------------------------------------------------
-# Post-Build Hook: Policy + Host Test + Hardening + Container Signing
+# Post-Build Hook: Policy + Host Test + Metadata Strip + Container Signing
 # ------------------------------------------------------------------------------
-recipe.objcopy.postbuild.1.pattern="{tools.na8ve_upload.path}{tools.na8ve_upload.cmd}" build-pvm --wasm "{build.path}/{build.project_name}.raw.wasm" --sketch-dir "{build.source.path}" --name "{build.project_name}" --linear {build.linear_max} --stack {build.stack_size} --budget-ms {build.budget_ms} {build.grants_flags} {build.harden_flags} --out "{build.path}/{build.project_name}.n8pv" --zip-out "{build.path}/{build.project_name}-na8ve-submission.zip" --elf-alias "{build.path}/{build.project_name}.elf"
+recipe.objcopy.postbuild.1.pattern="{tools.na8ve_upload.path}{tools.na8ve_upload.cmd}" build-pvm --wasm "{build.path}/{build.project_name}.raw.wasm" --sketch-dir "{build.source.path}" --name "{build.project_name}" --linear {build.linear_max} --stack {build.stack_size} --budget-ms {build.budget_ms} {build.grants_flags} --out "{build.path}/{build.project_name}.n8pv" --zip-out "{build.path}/{build.project_name}-na8ve-submission.zip" --elf-alias "{build.path}/{build.project_name}.elf"
 
 # ------------------------------------------------------------------------------
 # Size Reporting Recipe (Checks 64,512 B Payload Ceiling + 65,536 B Arena)

@@ -125,7 +125,7 @@ Include [`n8_sdk.h`](../na8ve-developer-sdk/pvm/n8_sdk.h) inside freestanding `p
 }
 ```
 
-Compile, hash imports, sign (`--key ~/.na8ve/app-key.pem` for buyer-paired hardware), strip `.c`/`.h` sources, and pack using `tools/na8ve_applab_tool.py`:
+Compile, map imports to the App Lab ABI, sign (`--key ~/.na8ve/app-key.pem` for buyer-paired hardware), strip `.c`/`.h` sources, and pack using `tools/na8ve_applab_tool.py`:
 
 ```bash
 python tools/na8ve_applab_tool.py pack \

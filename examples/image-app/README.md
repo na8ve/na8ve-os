@@ -118,7 +118,7 @@ python ../../tools/build_manifest.py manifest-entry.json --out dist/manifest.bin
 ### Step 4: Deploy to Hardware
 Deploy the signed payload and manifest to your target:
 
-* **Arduino Uno Q**: package the app with the Arduino App Lab SDK ([`sdk/arduino-app-lab/`](../../sdk/arduino-app-lab/README.md)) and import the `.zip` in Arduino App Lab, or click **Install via USB** on the app's card on the distribution site's **Apps** page.  The App Lab app is `applab/`: it walks a scene through the sandbox and asks the model broker what it sees; the camera look itself uses the Vision model, which needs a paid licence for the board, and the app says so on a board with the free licence.
+* **Arduino Uno Q**: package the app with the Arduino App Lab SDK ([`sdk/arduino-app-lab/`](../../sdk/arduino-app-lab/README.md)) and import the `.zip` in Arduino App Lab, or click **Install via USB** on the distribution site's **Apps** page.  The App Lab app is `applab/`: it walks a scene through the sandbox and asks the model broker what it sees; the camera look itself uses the Vision model, which needs a paid licence for the board, and the app says so on a board with the free licence.
 * **Seeed Studio XIAO ESP32-S3 Sense (pre-flashed)**: upload from the Arduino IDE with the board package ([`sdk/arduino-ide/`](../../sdk/arduino-ide/README.md)).
 
 ---
@@ -293,7 +293,7 @@ The interactive operator terminal (`na8ve-tui`) supports dynamic model catalog i
 Output:
 ```text
 model 1: bx-1m-l2-t036 (recurrent int32)
-model 2: bx-1m-l2-t036-hardened (recurrent int32)
+model 2: bx-1m-l2-t036 (recurrent int32)
 model 3: bx-2m-t035 (recurrent int32)
 OK model
 ```

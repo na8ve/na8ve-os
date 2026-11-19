@@ -229,7 +229,6 @@ In `na8ve-os`, applications have **zero ambient authority** over physical hardwa
 * **Overview**: Accessible in Google Chrome and Microsoft Edge via WebSerial in the official web flasher:
   - **Interactive Console Tab**: Command chips (`tui`, `status`, `readings`, `acts`, `periph`), interactive command bar, and streaming token transcript.
   - **Live Vision View Tab**: Real-time camera viewfinder canvas, object classification label, dynamic confidence percentage bar, and one-click cognitive turn routing to `cortex-mvp` (pVM #1).
-  - **Obfuscated & Zero-Install**: Hardened with WebAssembly and minified JS bundles, ensuring no models or prompts are exposed.
 
 ### B. In-Device Native ANSI Terminal
 
@@ -245,91 +244,23 @@ In `na8ve-os`, applications have **zero ambient authority** over physical hardwa
 
 ---
 
-## 6. Distribution Site: Firmware, Standalone Apps & Desktop Tools, Shop Products (`10 Day Backorder`) & Licence (`N8LC`)
+## 6. Getting na8ve-os, the Apps, and a Board Licence
 
-The official `na8ve` distribution site organizes device provisioning, application deployment, desktop operator tooling, and hardware fulfillment into three primary navigation sections: **Firmware** (`/`), **Apps** (`/apps`), and **Shop** (`/shop`).
+Everything is on the distribution site, **[dev.na8ve.com](https://dev.na8ve.com)**:
 
-### 6.1 Firmware (`/`) — Browser WebUSB Releases for Arduino Uno Q
+* **Firmware** (`/`): installs na8ve-os on an Arduino Uno Q from Chrome or Edge over USB-C.
+  * **Community (free):** the 1M model. **Get the free licence** starts a free checkout (no payment); it licenses the board you install on.
+  * **Pre-Flashed (licensed):** the 1M, 2M and Vision models, with a board licence bought on the same page or included with pre-flashed hardware.
+* **Apps** (`/apps`): installs the example apps on a board over USB from the browser, offers their Arduino App Lab packages, and the desktop tools. Installing an app writes only that app's own sandbox; na8ve-os and its models are left as they are.
+* **Shop** (`/shop`): pre-flashed hardware. The Seeed Studio XIAO ESP32-S3 Sense runs na8ve-os only as pre-flashed hardware. Use **Track Existing Order** with your order ID and email to follow an order.
 
-Use Chrome or Edge on desktop over USB-C to provision an Arduino Uno Q directly from the **Firmware** page:
+### Licensing an Arduino Uno Q
 
-| Release | Edition | Models & Capabilities | Pricing |
-| :--- | :--- | :--- | :--- |
-| **`na8ve-os · Uno Q (Community Beta 1M)`** (`na8ve-os-unoq`, `0.1.0-beta.1`) | Community Beta | `na8ve-osd`, App Lab Web UI, `cortex-mvp`, STM32U585 bridge, and **1M Master only** (`bx-1m-l2-t036`, `int32`). Keeps `_b` recovery slot intact. | **Free** |
-| **`na8ve-os · Uno Q (Pre-Flashed)`** (`na8ve-os-unoq-preflashed`, `0.1.0`) | Pre-Flashed / Licensed Enclave | Production OS with **1M (`bx-1m-l2-t036`, `int32`)**, **2M (`bx-2m-t035`, `int32`)**, and **Vision (`vn8v-tin66`, `float32`)**, MAC-bound `1,024-byte` `N8LC` licence verification, and buyer-delegated RSA-3072-PSS app signing. Dev diagnostic probes omitted. | **`$69.00` Licence Key** (BYO Uno Q) or included with **`$149.00`** hardware |
-
-> **Platform Availability Note (ESP32-S3):** **Seeed Studio XIAO ESP32-S3 Sense** does **not** have a public browser WebSerial OS flasher on the distribution site. XIAO ESP32-S3 Sense is available **only as a Pre-Flashed ESP32 product (`NA8-XIAO-S3-PRE`)** through the **Shop**, arriving with the signed runtime and neural model partition factory-installed and ready for Arduino IDE `.n8pv` app uploads.
-
-### 6.2 Apps (`/apps`) — Standalone SDK Applications & Desktop Tools (TUI & Vision)
-
-The **Apps** tab provides one-click USB installation and direct package downloads for free standalone applications running in `na8ve-os` hardware sandboxes, plus native cross-platform operator tooling for your desktop workstation.
-
-#### Page Layout & Controls
-* **Same-Row Filter & Search Controls**: The filter tabs (`All`, `Arduino Uno Q · App Lab`, `XIAO ESP32-S3 · Arduino IDE`, `Desktop Tools (TUI & Vision)`) and live search input bar remain locked side-by-side in the same horizontal row with responsive horizontal scrolling on compact viewports.
-* **Non-Transparent, Theme-Matched Cards**: All application cards feature solid, high-contrast surfaces (`var(--surface)`) matching the visual theme of the **Firmware** and **Shop** cards.
-* **Target Hardware Specification Banners**: Every card features a dedicated hardware banner detailing silicon microarchitectures:
-  * **Arduino Uno Q**: `Qualcomm QRB2210 (Quad Cortex-A53 @ 2.0 GHz) + STM32U585 Coprocessor` (`KVM STAGE-2`).
-  * **Seeed Studio XIAO ESP32-S3 Sense**: `Espressif ESP32-S3R8 (Xtensa LX7 @ 240 MHz, 8MB PSRAM, OV2640, PDM mic)` (`XTENSA LX7`).
-  * **Desktop Operator Tools**: `Windows x64 (.exe) · Linux x86_64 · macOS Apple Silicon (arm64)` (`MULTI-PLATFORM`).
-* **Vertical Button Hierarchy**: The primary **"Install via USB"** button is stacked vertically directly **above** the **"Package"** download and GitHub source repository link row.
-
-#### A. Free Standalone Edge Sandbox Applications
-
-These applications are 100% free and contain **zero underlying OS firmware, bootloaders, or models**. They install strictly into the user application sandbox, preserving the running operating system and on-device models:
-
-* **For Arduino Uno Q (Arduino App Lab):**
-  * **Developer SDK Starter App (`na8ve-developer-sdk`)**: Official starter sandbox with KVM Stage-2 isolation, memory graph recall query hooks, and Python Brick bridge.
-  * **LED Matrix Cognitive Visualizer (`matrix-app`)**: Real-time 8x12 LED matrix cognitive turn and attention visualizer via STM32 coprocessor.
-  * **Smart Greenhouse Reflex Agent (`greenhouse-app`)**: Closed-loop environmental cognitive monitor, Vapor Pressure Deficit (VPD) calculator, and actuator reflex proposals.
-  * **Vision Saccade Classifier (`image-app`)**: Privacy-preserving edge visual classifier with 32x8 ASCII terminal viewports and zero raw image persistence.
-  * **Inter-Sandbox Model Broker (`broker-app`)**: Asynchronous IPC query coordinator routing natural language generation turns between isolated sandbox slots.
-
-* **For Seeed Studio XIAO ESP32-S3 (Arduino IDE):**
-  * **Arduino IDE Developer SDK (`na8ve-developer-sdk-esp32`)**: Demonstrates serial console cognitive turns, graph recall queries, and actuator policy enforcement.
-  * **Greenhouse Environmental Agent (`greenhouse-agent-esp32`)**: Autonomous environmental monitor with sensor seam sampling and Core 0 actuator safety tables.
-  * **Minimal Standalone Sandbox (`hello-app-esp32`)**: Minimal reference sandbox demonstrating turn state persistence and sub-millisecond IPC ping/pong latency.
-  * **Edge IPC Query Coordinator (`broker-app-esp32`)**: Standalone IPC query coordinator routing sensory observations between isolated sandbox slots.
-
-> **USB Installation & Zero Firmware Overwrite Policy:** When you click **Install via USB** on any application card, the installer writes strictly to the isolated user application sandbox (`Stage-2 MicroVM` on Uno Q; `Hardware Isolated` user slot on ESP32-S3). No base OS bootloader, kernel, hypervisor, partition table, or models are touched. Once installed, simply power cycle or start your board to run the application immediately.
-
-#### B. Desktop Operator Tools (TUI & Vision)
-
-Download native, self-contained desktop binaries from the **Desktop Tools** category on the Apps page:
-
-| Desktop Tool | Description | Windows x64 | Linux x86_64 | macOS Apple Silicon |
-| :--- | :--- | :--- | :--- | :--- |
-| **`na8ve-tui`** | High-performance interactive terminal user interface. Connects over USB serial (ESP32-S3) or TCP socket (Uno Q), featuring real-time conversation streaming, live token agreement metrics, episodic memory graph inspection, and device telemetry. | [`na8ve-tui.exe`](/tools/na8ve-tui.exe) | [`na8ve-tui`](/tools/na8ve-tui) | [`na8ve-tui-darwin-arm64`](/tools/na8ve-tui-darwin-arm64) |
-| **`na8ve-vision`** | Real-time edge visual perception monitor. Streams 32x8 ASCII camera viewports, foveated bounding-box detections, confidence intervals, and cognitive situation reports over USB with zero raw pixel retention. | [`na8ve-vision.exe`](/tools/na8ve-vision.exe) | [`na8ve-vision`](/tools/na8ve-vision) | [`na8ve-vision-darwin-arm64`](/tools/na8ve-vision-darwin-arm64) |
-| **`na8ve-console`** | Headless CLI and automation tool for scripted turn requests, memory graph dumps, and actuator audit verification. | [`na8ve-console.exe`](/tools/na8ve-console.exe) | [`na8ve-console`](/tools/na8ve-console) | [`na8ve-console-darwin-arm64`](/tools/na8ve-console-darwin-arm64) |
-
-### 6.3 Shop (`/shop`) — Hardware Products (`10 Day Backorder`)
-
-All hardware SKUs in the **Shop** ship as factory-provisioned units on a **`10 Day Backorder`** (`Ships within 10 days`):
-
-| SKU | Product Name | What Ships in the Box | Price | US Tracked Ground Shipping |
-| :--- | :--- | :--- | :---: | :---: |
-| **`NA8-UNOQ-PRE`** | **na8ve-os · Arduino Uno Q Pre-Flashed Enclave Edition** | Arduino Uno Q (QRB2210 + STM32U585) factory-flashed with `EL2` KVM isolation, `na8ve-osd`, App Lab UI, **1M + 2M + Vision** models, USB-C cable, and your bound `N8LC` + RSA-3072-PSS developer signing key. | **`$149.00`** | **Free** (`$100+` order) |
-| **`NA8-XIAO-S3-PRE`** | **na8ve-os · XIAO ESP32-S3 Sense Pre-Flashed Kit** | Seeed XIAO ESP32-S3 Sense (`240 MHz` dual LX7, `8 MB` octal PSRAM, `8 MB` Flash, OV2640 camera, PDM mic, microSD slot) factory-flashed with signed `na8ve-os` firmware and model partition. **Only way to acquire `na8ve-os` on XIAO ESP32-S3.** | **`$49.00`** | **`$9.00`** (Free on `$100+` orders) |
-| **`NA8-DUO-BUNDLE`** | **na8ve Complete Edge Kit (Uno Q Pre-Flashed + XIAO ESP32-S3 Sense)** | Both pre-flashed boards paired together with a delegated RSA-3072-PSS developer signing key, App Lab + Arduino IDE starter SDK access, and USB-C data cables. | **`$185.00`** *(compare `$198.00` — Save `$13.00`)* | **Free** (`$100+` order) |
-
-* **International & Express Rates:** Tracked Ground is `$14.00` (Canada) and `$19.00` (International); 2-Day Express is `$24.00` (US) and `$39.00` (International).
-* **Order Lookup:** Use **Track Existing Order** on the **Shop** page with your **Order ID** and email address to check fulfillment and tracking status.
-
-### 6.4 How to Purchase & Attach a Licence Key (`N8LC`) for Uno Q
-
-To unlock the full **Pre-Flashed Enclave (`na8ve-os-unoq-preflashed`, 1M + 2M + Vision)** on a bring-your-own Arduino Uno Q (or re-flash/re-bind a pre-flashed unit from the **Firmware** page):
-
-1. **Select the Licensed Card:** On **Firmware** (`/`), click **`na8ve-os · Uno Q (Pre-Flashed)`** (`$69.00`) to expand the **Purchase Licence Key (`N8LC`)** panel.
-2. **Prepare Your Developer App Signing Key (RSA-3072-PSS):**
-   * **Browser option (quickest):** Click **`Generate & download app-key.pem`** to generate an RSA-3072 keypair directly in Chrome/Edge Web Crypto and save `app-key.pem` to `~/.na8ve/app-key.pem` (this authorizes `.n8pv` apps you build and sign on your workstation).
-   * **CLI option:** Run `keygen` locally (`sdk/arduino-app-lab/tools/na8ve_applab_tool.py keygen --key ~/.na8ve/app-key.pem`) and click **`Load pubkey.bin`** (`384`/`388` bytes) so the flasher binds your public key.
-3. **Purchase or Attach Your Licence:**
-   * Click **`Buy`** (`$69.00`) to complete checkout (which fills in your checkout session token `cs_live_...` / `cs_test_...`), **or** paste an existing checkout session token, **or** click **`Attach pre-minted .n8lc licence file`** if you already hold a `1,024-byte` `N8LC` file.
-4. **Target Board MAC & Flash:**
-   * Optionally enter your board's 6-byte hardware MAC (`aa:bb:cc:dd:ee:ff`), or leave it blank to auto-derive the identity from your USB-connected Uno Q during handshake.
-   * Choose an install action (**`Install OS`**, **`Clean na8ve-os reinstall`**, or **`Factory reset`**) and click **`Connect & install`**.
-   * The browser mints your MAC-bound `1,024-byte` `N8LC` block, flashes Slot A safely (`hyp_a` verified before `boot_a` while preserving `_b` fallback), and provisions `/etc/na8ve-os/licence.n8lc` plus your delegated public key.
-5. **Back Up Your Minted File:** Click **`Save minted .n8lc`** after flashing completes so you keep an offline backup alongside `~/.na8ve/app-key.pem`.
+1. Open the release on the **Firmware** page: **Community** for the free licence, **Pre-Flashed** for a paid one.
+2. Create your app signing key if you will sign your own apps (optional for Community, required for Pre-Flashed): click **Generate & download app-key.pem** and keep it as `~/.na8ve/app-key.pem`, or run `python sdk/arduino-app-lab/tools/na8ve_applab_tool.py keygen --key ~/.na8ve/app-key.pem` and click **Load pubkey.bin**. The board's licence then lets it run apps you sign with that key.
+3. Click **Get the free licence** (Community) or **Buy** (Pre-Flashed) and complete the checkout. You can also paste the session key of an earlier checkout, or attach an `.n8lc` licence file.
+4. Connect the board over USB-C and click **Connect & install**. The licence is bound to that board.
+5. Click **Save minted .n8lc** to keep a copy of the board's licence.
 
 ---
 
@@ -348,7 +279,7 @@ Developer SDKs, starter templates, and technical references:
 
 ### Target Platform SDKs
 
-* **[`sdk/arduino-app-lab/`](sdk/arduino-app-lab/README.md)**: Arduino App Lab SDK for **Arduino Uno Q** (`tools/na8ve_applab_tool.py`, Python `na8ve.app_bricks`, Zero-Leak `.zip` packaging, Community Beta 1M vs Pre-Flashed `$69.00` `N8LC` setup).
+* **[`sdk/arduino-app-lab/`](sdk/arduino-app-lab/README.md)**: Arduino App Lab SDK for **Arduino Uno Q** (`tools/na8ve_applab_tool.py`, Python `na8ve.app_bricks`, `.zip` packaging, and board licences).
 * **[`sdk/arduino-ide/`](sdk/arduino-ide/README.md)**: Arduino IDE `na8ve:esp32s3` board package and `Na8veOS`/`Na8veModel`/`Na8veStore`/`Na8veAct`/`Na8veSeam` headers for **Seeed XIAO ESP32-S3 Sense Pre-Flashed (`NA8-XIAO-S3-PRE`)** hardware.
 
 ### SDK & Architecture Guides (`docs/sdk-guide/`)
