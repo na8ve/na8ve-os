@@ -65,7 +65,8 @@ def run_cycle() -> dict:
         turn = cog.turn("Bed-1 reads 30 C, 85 % humidity and dry soil. Should the fan run?", max_bytes=96)
         answer = {"reply": turn.reply, "model": turn.model, "latency_ms": round(turn.latency_ms, 1)}
     except EnclaveError as exc:
-        if not exc.code.startswith("CX_LIC_E_"):
+        # no licence for the model, or no model on the board yet (its copy comes with its licence)
+        if not exc.code.startswith(("CX_LIC_E_", "CX_MODEL_E_")):
             raise
         answer = {"reply": "", "unavailable": str(exc)}
 

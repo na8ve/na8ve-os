@@ -42,8 +42,21 @@ def main() -> dict:
     recalled = mem.recall("sdk_demo", limit=4, max_hops=2)
     mem.retract(mid, retraction_class="standard")
 
-    # 3. Recurrent byte-level cognitive turn
-    turn_res = cog.turn("Sensor humidity is 84% at 26.4C. Next action:", max_bytes=48)
+    # 3. Recurrent byte-level cognitive turn. The board's own copy of the model comes with its licence:
+    #    a board without one (or without a licence for it) reports that instead of stopping
+    try:
+        turn_res = cog.turn("Sensor humidity is 84% at 26.4C. Next action:", max_bytes=48)
+        turn = {
+            "model": turn_res.model,
+            "mode": turn_res.mode,
+            "width": turn_res.width,
+            "latency_ms": round(turn_res.latency_ms, 1),
+            "reply": turn_res.reply,
+        }
+    except EnclaveError as exc:
+        if not exc.code.startswith(("CX_LIC_E_", "CX_MODEL_E_")):
+            raise
+        turn = {"unavailable": str(exc)}
 
     # 4. 8-saccade vision pass. The Vision model needs a paid licence for the board: with the free
     #    licence the enclave refuses it, and the app reports that instead of stopping
@@ -73,13 +86,7 @@ def main() -> dict:
             "hopCapped": recalled.hopCapped,
             "fanOutClipped": recalled.fanOutClipped,
         },
-        "turn": {
-            "model": turn_res.model,
-            "mode": turn_res.mode,
-            "width": turn_res.width,
-            "latency_ms": round(turn_res.latency_ms, 1),
-            "reply": turn_res.reply,
-        },
+        "turn": turn,
         "vision": vision,
         "actuation": {
             "fan": {"approved": act_fan.approved, "audit_seq": act_fan.audit_seq},
