@@ -1,0 +1,19 @@
+name: Smart Greenhouse Reflex Agent
+description: Closed-loop environmental cognitive monitor and VPD reflex agent.
+ports:
+- 7000
+bricks:
+- arduino:web_ui
+- na8ve:cognitive_os:
+    variables:
+      NA8VE_MODEL_NAME: bx-1m-l2-t036
+      NA8VE_EXEC_MODE: recurrent
+      NA8VE_STATE_WIDTH: int32
+- na8ve:memory_graph:
+    variables:
+      NA8VE_DEFAULT_TIER: semantic
+      NA8VE_MAX_RECALL_HOPS: '2'
+- na8ve:act_policy:
+    variables:
+      NA8VE_ACT_COOLDOWN_MS: '200'
+icon: "\U0001F331"

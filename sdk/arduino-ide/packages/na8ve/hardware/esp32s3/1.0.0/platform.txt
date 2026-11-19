@@ -1,0 +1,75 @@
+################################################################################
+# na8ve-os ESP32-S3 Sandboxed pVM Platform (na8ve:esp32s3)
+# Compiles Arduino sketches to wasm32-freestanding and packages signed .n8pv
+################################################################################
+
+name=na8ve-os ESP32-S3 Sandboxed pVM Boards
+version=1.0.0
+
+# ------------------------------------------------------------------------------
+# Toolchain Paths
+# ------------------------------------------------------------------------------
+compiler.path={runtime.platform.path}/tools/
+compiler.c.cmd=na8ve-zig.cmd
+compiler.cpp.cmd=na8ve-zig.cmd
+compiler.ar.cmd=na8ve-zig.cmd
+compiler.ld.cmd=na8ve-zig.cmd
+
+tools.na8ve_upload.path={runtime.platform.path}/tools/
+tools.na8ve_upload.cmd=na8ve-arduino-tool.cmd
+
+# ------------------------------------------------------------------------------
+# Compiler Flags: Freestanding wasm32 with strict WAMR device feature set
+# ------------------------------------------------------------------------------
+compiler.wasm.flags=-target wasm32-freestanding -mcpu=mvp+bulk_memory+sign_ext -O2 -ffunction-sections -fdata-sections -Wall -Wextra -Wno-unused-parameter -isystem "{build.core.path}/libc"
+compiler.c.flags=cc {compiler.wasm.flags} -std=c11 -MMD
+compiler.cpp.flags=c++ {compiler.wasm.flags} -fno-exceptions -fno-rtti -std=c++17 -MMD
+compiler.ar.flags=ar rcs
+
+# ------------------------------------------------------------------------------
+# Linker Flags: 8 KB Stack First, 64 KB Linear Memory Ceiling, Export WIT Entrypoints
+# ------------------------------------------------------------------------------
+compiler.ld.flags=wasm-ld --no-entry --gc-sections --strip-all --stack-first -z stack-size={build.stack_size} --initial-memory={build.linear_max} --max-memory={build.linear_max} --export=n8_init --export=n8_inbox --export=n8_on_message "--allow-undefined-file={build.core.path}/n8_imports.txt"
+
+# ------------------------------------------------------------------------------
+# Preprocessing & Compilation Recipes
+# ------------------------------------------------------------------------------
+preproc.macros.flags=-w -x c++ -E -CC
+recipe.preproc.macros="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -DF_CPU={build.f_cpu} -DARDUINO=10819 -DARDUINO_{build.board} -DNA8VE_OS_PVM=1 {includes} {preproc.macros.flags} "{source_file}" -o "{preprocessed_file_path}"
+
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -DF_CPU={build.f_cpu} -DARDUINO=10819 -DARDUINO_{build.board} -DNA8VE_OS_PVM=1 {includes} "{source_file}" -c -o "{object_file}"
+
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -DF_CPU={build.f_cpu} -DARDUINO=10819 -DARDUINO_{build.board} -DNA8VE_OS_PVM=1 {includes} "{source_file}" -c -o "{object_file}"
+
+recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{archive_file_path}" "{object_file}"
+
+# ------------------------------------------------------------------------------
+# Combine Recipe: Produces unhardened {build.project_name}.raw.wasm
+# Note: arduino-cli checks for {build.path}/{build.project_name}.elf or .bin
+# so we also copy the signed .n8pv to .elf for IDE size reporting
+# ------------------------------------------------------------------------------
+recipe.c.combine.pattern="{compiler.path}{compiler.ld.cmd}" {compiler.ld.flags} {object_files} "{build.path}/{archive_file}" -o "{build.path}/{build.project_name}.raw.wasm"
+
+# ------------------------------------------------------------------------------
+# Post-Build Hook: Policy + Host Test + Hardening + Container Signing
+# ------------------------------------------------------------------------------
+recipe.objcopy.postbuild.1.pattern="{tools.na8ve_upload.path}{tools.na8ve_upload.cmd}" build-pvm --wasm "{build.path}/{build.project_name}.raw.wasm" --sketch-dir "{build.source.path}" --name "{build.project_name}" --linear {build.linear_max} --stack {build.stack_size} --budget-ms {build.budget_ms} {build.grants_flags} {build.harden_flags} --out "{build.path}/{build.project_name}.n8pv" --zip-out "{build.path}/{build.project_name}-na8ve-submission.zip" --elf-alias "{build.path}/{build.project_name}.elf"
+
+# ------------------------------------------------------------------------------
+# Size Reporting Recipe (Checks 64,512 B Payload Ceiling + 65,536 B Arena)
+# ------------------------------------------------------------------------------
+recipe.size.pattern="{tools.na8ve_upload.path}{tools.na8ve_upload.cmd}" size --n8pv "{build.path}/{build.project_name}.n8pv" --wasm "{build.path}/{build.project_name}.raw.wasm"
+recipe.size.regex=^PROGRAM_BYTES:\s+([0-9]+).*
+recipe.size.regex.data=^DATA_BYTES:\s+([0-9]+).*
+
+# ------------------------------------------------------------------------------
+# Export Compiled Binary Hook (Sketch -> Export Compiled Binary)
+# ------------------------------------------------------------------------------
+recipe.hooks.savehex.postsavehex.1.pattern="{tools.na8ve_upload.path}{tools.na8ve_upload.cmd}" export-zip --src "{build.path}/{build.project_name}-na8ve-submission.zip" --n8pv "{build.path}/{build.project_name}.n8pv" --dst-dir "{build.source.path}"
+
+# ------------------------------------------------------------------------------
+# Upload Tool: Streams signed .n8pv over USB CDC-ACM to running na8ve-os kernel
+# ------------------------------------------------------------------------------
+tools.na8ve_upload.upload.params.verbose=--verbose
+tools.na8ve_upload.upload.params.quiet=
+tools.na8ve_upload.upload.pattern="{tools.na8ve_upload.path}{tools.na8ve_upload.cmd}" upload --port "{serial.port}" {upload.slot_flag} {build.grants_flags} --n8pv "{build.path}/{build.project_name}.n8pv" {upload.verbose}

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>na8ve-os · UNO Q Cognitive Workstation</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230284c7'/%3E%3Ctext x='16' y='21' font-size='14' font-weight='bold' text-anchor='middle' fill='%23ffffff' font-family='monospace'%3En8%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-cluster">
+      <div class="brand-mark">n8</div>
+      <div>
+        <div class="brand-title">na8ve-os <span class="brand-sub">· Arduino UNO Q</span></div>
+        <div class="brand-meta" id="hdr-app-name">loading app...</div>
+      </div>
+    </div>
+
+    <nav class="tab-nav" aria-label="Workstation views">
+      <button class="tab-btn active" data-view="dashboard" id="tab-btn-dashboard">Dashboard</button>
+      <button class="tab-btn" data-view="tui" id="tab-btn-tui">TUI &amp; Cortex</button>
+      <button class="tab-btn" data-view="vision" id="tab-btn-vision">Vision Live View</button>
+    </nav>
+
+    <div class="status-pills">
+      <span class="pill" id="pill-model" title="Active cognitive model">model: --</span>
+      <span class="pill" id="pill-mode" title="Execution mode and arithmetic precision">mode: -- · --</span>
+      <span class="pill mono" id="pill-sha" title="Active working state digest">sha: --</span>
+      <span class="pill pill-ok" id="pill-link">enclave: connecting</span>
+      <button class="btn-ghost btn-xs" id="btn-theme-toggle" type="button" title="Toggle Cortex light/dark theme">Dark Mode</button>
+      <button class="btn-ghost" id="btn-refresh-all" type="button" title="Refresh enclave telemetry">Refresh</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <!-- ===================== TAB 1: DASHBOARD (na8ve-console) ===================== -->
+    <section class="view-panel active" id="view-dashboard">
+      <div class="kpi-grid">
+        <div class="card kpi-card">
+          <div class="kpi-label">Host SoC &amp; Enclave</div>
+          <div class="kpi-val" id="kpi-soc">QRB2210</div>
+          <div class="kpi-sub" id="kpi-soc-sub">Awaiting telemetry...</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label">Single-Writer Memory Store</div>
+          <div class="kpi-val" id="kpi-store-live">0 live</div>
+          <div class="kpi-sub" id="kpi-store-sub">sensory: 0 · episodic: 0 · semantic: 0</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label">pvmfw Domains &amp; Actuators</div>
+          <div class="kpi-val" id="kpi-domains">0 active</div>
+          <div class="kpi-sub" id="kpi-audit">audit seq: 0</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label">Vision Sensor Seam</div>
+          <div class="kpi-val" id="kpi-cam">72x72 view</div>
+          <div class="kpi-sub" id="kpi-cam-sub">UnoQ-QRB2210-Cam · metadata-only</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-head">
+            <h2>Live Sensor Readings</h2>
+            <span class="tag">Metadata Only</span>
+          </div>
+          <div class="readings-grid" id="dash-readings">
+            <div class="empty-note">Waiting for sensor readings...</div>
+          </div>
+
+          <div class="card-head mt-16">
+            <h2>Hardware &amp; Peripheral Bus</h2>
+            <span class="tag tag-mono">periph</span>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" id="dash-periph-table">
+              <thead>
+                <tr><th>Peripheral</th><th>OK</th><th>Details</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="col-stack">
+          <div class="card">
+            <div class="card-head">
+              <h2>Cognitive Turn Console</h2>
+              <span class="tag">Enclave pVM #1</span>
+            </div>
+            <form id="dash-turn-form" class="turn-form">
+              <div class="form-row">
+                <select id="dash-model-select" aria-label="Model">
+                  <option value="bx-1m-l2-t036">bx-1m-l2-t036</option>
+                  <option value="bx-2m-t035">bx-2m-t035</option>
+                </select>
+                <select id="dash-width-select" aria-label="Precision width">
+                  <option value="int32" selected>int32 (Master)</option>
+                  <option value="int16">int16</option>
+                  <option value="int8">int8</option>
+                </select>
+                <select id="dash-mode-select" aria-label="Execution mode">
+                  <option value="recurrent">recurrent</option>
+                  <option value="window">window</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <input id="dash-turn-prompt" type="text" placeholder="Ask the enclave (e.g. Inspect greenhouse humidity and recommend action)" required />
+                <button type="submit" class="btn-primary">Run Turn</button>
+              </div>
+            </form>
+            <div class="console-box" id="dash-turn-output">Ready for cognitive turn.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Policy-Mediated Actuators (cx_act)</h2>
+              <span class="tag tag-warn" id="dash-reserved-pins">reserved: 7..21</span>
+            </div>
+            <div class="act-grid" id="dash-act-grid"></div>
+            <div class="form-row mt-12">
+              <button type="button" class="btn-danger-outline" id="btn-test-reserved-pin">Test Policy Guard (GPIO21 Reserved)</button>
+              <span class="status-inline" id="dash-act-status"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-16">
+        <div class="card-head">
+          <h2>Enclave &amp; Runtime Info</h2>
+          <span class="tag tag-mono">os-info</span>
+        </div>
+        <pre class="raw-log" id="dash-os-info">Connecting to enclave...</pre>
+      </div>
+    </section>
+
+    <!-- ===================== TAB 2: TUI & CORTEX (na8ve-tui + na8ve_cortex_view) ===================== -->
+    <section class="view-panel" id="view-tui">
+      <div class="tui-subnav">
+        <div class="tui-tabs">
+          <button class="tui-tab active" data-tui="f1">F1 · Chat &amp; Console</button>
+          <button class="tui-tab" data-tui="f2">F2 · Memory Store</button>
+          <button class="tui-tab" data-tui="f3">F3 · Device &amp; Policy</button>
+          <button class="tui-tab" data-tui="f4">F4 · Cortex Graph</button>
+        </div>
+        <div class="tui-hint">Keyboard: F1-F4 switch panes inside TUI</div>
+      </div>
+
+      <!-- F1: Chat & Enclave Console -->
+      <div class="tui-pane active" id="tui-pane-f1">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-head">
+              <h2>F1 · Enclave Conversation</h2>
+              <span class="tag tag-mono" id="tui-chat-sha">state: --</span>
+            </div>
+            <div class="chat-feed" id="tui-chat-feed">
+              <div class="chat-msg sys">Session initialized. Turns update working state inside hardware secret memory.</div>
+            </div>
+            <form id="tui-chat-form" class="form-row mt-12">
+              <input id="tui-chat-input" type="text" placeholder="Send turn to enclave..." required />
+              <button type="submit" class="btn-primary">Send</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Allowlisted Enclave Terminal</h2>
+              <span class="tag tag-mono">enclave ipc</span>
+            </div>
+            <div class="chip-row" id="tui-cmd-chips">
+              <button type="button" class="chip" data-cmd="os-info">os-info</button>
+              <button type="button" class="chip" data-cmd="periph">periph</button>
+              <button type="button" class="chip" data-cmd="readings">readings</button>
+              <button type="button" class="chip" data-cmd="acts">acts</button>
+              <button type="button" class="chip" data-cmd="cam-probe">cam-probe</button>
+              <button type="button" class="chip" data-cmd="export c 0 40">export c</button>
+              <button type="button" class="chip" data-cmd="export l 0 40">export l</button>
+            </div>
+            <pre class="terminal-out" id="tui-term-out">$ ready (choose a command or type below)</pre>
+            <form id="tui-term-form" class="form-row mt-12">
+              <input id="tui-term-input" type="text" placeholder="os-info | periph | acts | readings | export c 0 40" required />
+              <button type="submit" class="btn-primary">Exec</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- F2: Memory Store -->
+      <div class="tui-pane" id="tui-pane-f2">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-head">
+              <h2>Remember (Bound SQLite Writer)</h2>
+              <span class="tag">Core 0 Single Writer</span>
+            </div>
+            <form id="mem-add-form" class="col-stack">
+              <textarea id="mem-add-text" rows="2" placeholder="Enter fact, observation, or policy note..." required></textarea>
+              <div class="form-row">
+                <select id="mem-add-tier">
+                  <option value="episodic">episodic</option>
+                  <option value="sensory">sensory</option>
+                  <option value="semantic">semantic</option>
+                </select>
+                <label class="inline-field">
+                  Importance:
+                  <input id="mem-add-imp" type="number" step="0.05" min="0" max="1" value="0.75" />
+                </label>
+                <button type="submit" class="btn-primary">Store Memory</button>
+              </div>
+            </form>
+
+            <div class="card-head mt-16">
+              <h2>Bounded Recall Query</h2>
+              <div class="clip-badges" id="mem-clip-badges">
+                <span class="clip-flag" id="flag-truncated">truncated: false</span>
+                <span class="clip-flag" id="flag-hop">hopCapped: false</span>
+                <span class="clip-flag" id="flag-fan">fanOutClipped: false</span>
+              </div>
+            </div>
+            <form id="mem-recall-form" class="form-row">
+              <input id="mem-recall-query" type="text" placeholder="Query memories (empty = recent live)..." />
+              <input id="mem-recall-hops" type="number" min="1" max="5" value="2" style="max-width:72px" title="Max hops" />
+              <button type="submit" class="btn-primary">Recall</button>
+            </form>
+            <div class="recall-list mt-12" id="mem-recall-results"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Memory Store Snapshot</h2>
+              <div class="form-row">
+                <select id="mem-filter-tier">
+                  <option value="">All Tiers</option>
+                  <option value="sensory">sensory</option>
+                  <option value="episodic">episodic</option>
+                  <option value="semantic">semantic</option>
+                </select>
+                <button type="button" class="btn-ghost" id="btn-reload-store">Reload</button>
+              </div>
+            </div>
+            <div class="table-wrap tall">
+              <table class="data-table" id="mem-store-table">
+                <thead>
+                  <tr><th>ID</th><th>Tier</th><th>Imp</th><th>Status</th><th>Text</th><th>Action</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- F3: Device & Policy -->
+      <div class="tui-pane" id="tui-pane-f3">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-head">
+              <h2>Device Peripheral &amp; OS State</h2>
+              <button type="button" class="btn-ghost" id="btn-f3-refresh">Refresh</button>
+            </div>
+            <pre class="terminal-out tall" id="f3-device-dump">Loading device state...</pre>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <h2>Actuator Policy Table (cx_act)</h2>
+              <span class="tag tag-warn">5-Stage Guard</span>
+            </div>
+            <div class="act-grid" id="f3-act-grid"></div>
+            <div class="card-head mt-16">
+              <h2>Actuator Policy Audit</h2>
+            </div>
+            <pre class="terminal-out" id="f3-act-log">Awaiting actuator transitions...</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- F4: Cortex Force Graph (na8ve_cortex_view) -->
+      <div class="tui-pane" id="tui-pane-f4">
+        <div class="cortex-layout">
+          <div class="card cortex-canvas-card">
+            <div class="card-head">
+              <h2>Cortex Graph Canvas</h2>
+              <div class="form-row">
+                <button type="button" class="btn-ghost" id="btn-graph-pause">Pause Physics</button>
+                <button type="button" class="btn-ghost" id="btn-graph-reset">Reset Layout</button>
+                <button type="button" class="btn-ghost" id="btn-graph-sync">Sync Graph</button>
+              </div>
+            </div>
+            <div class="legend-row">
+              <span class="leg"><i class="dot dot-sens"></i> sensory</span>
+              <span class="leg"><i class="dot dot-epi"></i> episodic</span>
+              <span class="leg"><i class="dot dot-sem"></i> semantic</span>
+              <span class="leg"><i class="dot dot-con"></i> concept</span>
+              <span class="leg"><i class="dot dot-ret"></i> retracted</span>
+            </div>
+            <div class="cortex-canvas-wrap" id="cortex-canvas-wrap">
+              <canvas id="cortex-canvas" width="760" height="460"></canvas>
+            </div>
+          </div>
+
+          <div class="cortex-sidebar">
+            <div class="card">
+              <div class="card-head">
+                <h2>Node Inspector</h2>
+                <span class="tag tag-mono" id="insp-id">none</span>
+              </div>
+              <div id="insp-body" class="insp-body">Click any node in the Cortex graph to inspect its tier, importance, liveness, and neighbor links.</div>
+              <div class="mt-12" id="insp-actions" style="display:none">
+                <button type="button" class="btn-danger-outline" id="btn-insp-retract">Retract Selected Memory</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <h2>Latest Turn Trace</h2>
+                <span class="tag tag-mono" id="trace-ms">-- ms</span>
+              </div>
+              <pre class="raw-log compact" id="cortex-turn-trace">Run a cognitive turn to capture recall + working state trace.</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-16">
+          <div class="card-head">
+            <h2>Store &amp; Enclave Transaction Log</h2>
+            <span class="tag">Single-Writer Audit</span>
+          </div>
+          <pre class="raw-log compact" id="cortex-tx-log">Transaction log initialized.</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TAB 3: VISION LIVE VIEW (na8ve-vision) ===================== -->
+    <section class="view-panel" id="view-vision">
+      <div class="vision-banner">
+        <strong>Metadata-Only Vision Seam:</strong> Raw 72x72 viewfinder frames stay transient in volatile memory and are never written to eMMC, SD, or cloud storage. Only predicted class metadata leaves the vision enclave.
+      </div>
+
+      <div class="vision-layout mt-16">
+        <div class="card vision-stage">
+          <div class="card-head">
+            <h2>Saccadic Viewfinder (72x72 → 432x432 RGB565)</h2>
+            <span class="tag tag-mono" id="vis-frame-meta">scene: -- · seq: --</span>
+          </div>
+          <div class="canvas-center">
+            <canvas id="vision-canvas" width="432" height="432"></canvas>
+            <video id="vis-webcam-video" autoplay playsinline muted style="display:none"></video>
+          </div>
+          <div class="vision-controls mt-12">
+            <button type="button" class="btn-primary" id="btn-vis-look">Look Once (8-Saccade)</button>
+            <button type="button" class="btn-ghost" id="btn-vis-webcam">Use Webcam</button>
+            <button type="button" class="btn-ghost" id="btn-vis-upload">Classify Image</button>
+            <input type="file" id="vis-file-input" accept="image/*" style="display:none" />
+            <button type="button" class="btn-ghost" id="btn-vis-stream">Pause Live Stream</button>
+            <select id="vis-scene-select" aria-label="Bench scene">
+              <option value="auto">Scene: Auto Cycle (0..5)</option>
+              <option value="webcam">Webcam · Live Host Camera</option>
+              <option value="0">Scene 0 · Tiny-ImageNet Sample</option>
+              <option value="1">Scene 1 · LeKiwi Navigation</option>
+              <option value="2">Scene 2 · Goldfish</option>
+              <option value="3">Scene 3 · Ladybug</option>
+              <option value="4">Scene 4 · Beacon / Tower</option>
+              <option value="5">Scene 5 · Basketball</option>
+            </select>
+            <select id="vis-model-select" aria-label="Vision model">
+              <option value="vn8v-tin66">vn8v-tin66 (66-class ImageNet)</option>
+              <option value="vn8v-lk2">vn8v-lk2 (LeKiwi Nav)</option>
+            </select>
+            <label class="inline-field">
+              Saccades:
+              <input id="vis-saccades-input" type="number" min="1" max="16" value="8" style="max-width:64px" />
+            </label>
+            <label class="inline-field">
+              <input id="chk-vis-bboxes" type="checkbox" checked />
+              Bounding Boxes
+            </label>
+          </div>
+        </div>
+
+        <div class="col-stack">
+          <div class="card">
+            <div class="card-head">
+              <h2>Top-1 Enclave Classification</h2>
+              <span class="tag" id="vis-model-pill">vn8v-tin66 · recurrent · float32</span>
+            </div>
+            <div class="vis-top1">
+              <div class="vis-class" id="vis-top1-class">--</div>
+              <div class="vis-metrics">
+                <span class="metric-pill" id="vis-top1-conf">conf: --%</span>
+                <span class="metric-pill" id="vis-top1-lat">latency: -- ms</span>
+                <span class="metric-pill" id="vis-top1-sac">saccades: 8</span>
+                <span class="metric-pill" id="vis-top1-bbox">bbox: --</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Top-5 Class Distribution</h2>
+              <span class="tag tag-mono">softmax</span>
+            </div>
+            <div class="top5-bars" id="vis-top5-bars">
+              <div class="empty-note">Click "Look Once" or wait for automatic classification.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Recent Vision Events</h2>
+              <span class="tag">Foveated 64x64 Window</span>
+            </div>
+            <pre class="raw-log compact" id="vis-event-log">Vision viewfinder connected.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="win-backdrop" class="win-backdrop hidden"></div>
+
+  <!-- Mandatory <dialog> confirmation before any memory retraction -->
+  <dialog id="retract-dialog" class="modal-dialog">
+    <form method="dialog" id="retract-dialog-form">
+      <h3>Confirm Memory Retraction</h3>
+      <p id="retract-dialog-desc">Are you sure you want to unconditionally retract this memory?</p>
+      <label class="dialog-field">
+        Retraction Class:
+        <select id="retract-class-select">
+          <option value="standard">standard (recompute active working state)</option>
+          <option value="instant-undo">instant-undo (fast rollback)</option>
+          <option value="forensic">forensic (strict quarantine &amp; scrub)</option>
+        </select>
+      </label>
+      <div class="dialog-actions">
+        <button type="button" class="btn-ghost" id="btn-retract-cancel">Cancel</button>
+        <button type="button" class="btn-danger" id="btn-retract-confirm">Confirm Retract</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

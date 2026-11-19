@@ -1,0 +1,55 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C / Wasm build artifacts
+build/
+dist/
+obj/
+bin/
+*.o
+*.obj
+*.wasm
+*.n8pv
+*.bin
+*.elf
+*.exe
+
+# Private keys & credentials (strictly prohibited from source tracking)
+*.pem
+*.key
+*.keystore
+*.cert
+*.crt
+.env
+credentials/
+
+# Testing and tooling caches
+.pytest_cache/
+*.log
+
+# Editor and OS metadata
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+*.local.md
+CLAUDE.md
+GEMINI.md
+AGENTS.md
+/CL*.md
+/GE*.md
+
+# Prebuilt / local operator helpers (compiled binaries distributed separately)
+tools/tui.py
+tools/console.py
+tools/vision_view.py
+tools/na8ve_cortex_view.py
+tools/na8ve_mirror.py
+tools/na8ve-console.bat
+tools/na8ve-console.ps1
+tools/prompts/
+

@@ -1,0 +1,13 @@
+{
+  "id": 4,
+  "name": "image",
+  "partition": "pvm_3",
+  "core": 3,
+  "payload": "image.n8pv",
+  "mem_linear": 131072,
+  "stack": 16384,
+  "budget_ms": 5000,
+  "allowed_ipc": [0, 1],
+  "grants": ["camera"]
+}
+

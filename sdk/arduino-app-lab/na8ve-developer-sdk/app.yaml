@@ -1,0 +1,28 @@
+name: na8ve-os Developer SDK
+description: Barebone Developer SDK starter app for building AI-native applications on na8ve-os (Arduino Uno Q).
+ports:
+- 7000
+bricks:
+- arduino:web_ui
+- na8ve:cognitive_os:
+    model: na8ve-1m-recurrent-qrb2210
+    variables:
+      NA8VE_MODEL_NAME: bx-1m-l2-t036
+      NA8VE_EXEC_MODE: recurrent
+      NA8VE_STATE_WIDTH: int32
+      NA8VE_PVM_PATH: /app/pvm/app.n8pv
+- na8ve:vision_saccade:
+    model: na8ve-vision-tin66-qrb2210
+    variables:
+      NA8VE_VISION_MODEL: vn8v-tin66
+      NA8VE_SACCADE_COUNT: '8'
+      NA8VE_CONFIDENCE_THRESHOLD: '0.25'
+- na8ve:memory_graph:
+    variables:
+      NA8VE_DEFAULT_TIER: episodic
+      NA8VE_MAX_RECALL_HOPS: '2'
+- na8ve:act_policy:
+    variables:
+      NA8VE_ACT_COOLDOWN_MS: '250'
+icon: "\U0001F6E0\uFE0F"
+

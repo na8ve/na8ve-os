@@ -1,0 +1,45 @@
+name: SDK Verification & Host Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  host-tests:
+    name: Native Host Tests & Controls
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc python3 python3-pip
+
+      - name: Test Hello App
+        run: |
+          cd examples/hello-app
+          gcc -I../../sdk/include hello.c test_hello.c ../../sdk/src/n8_util.c -o test_hello
+          ./test_hello
+          gcc -DEXPECT_MISMATCH -I../../sdk/include hello.c test_hello.c ../../sdk/src/n8_util.c -o test_hello_control
+          ./test_hello_control
+
+      - name: Test Broker App
+        run: |
+          cd examples/broker-app
+          gcc -I../../sdk/include ask.c test_ask.c ../../sdk/src/n8_util.c ../../sdk/src/n8_model.c -o test_ask
+          ./test_ask
+          gcc -DEXPECT_MISMATCH -I../../sdk/include ask.c test_ask.c ../../sdk/src/n8_util.c ../../sdk/src/n8_model.c -o test_ask_control
+          ./test_ask_control
+
+      - name: Test Greenhouse App
+        run: |
+          cd examples/greenhouse-app
+          gcc -I../../sdk/include greenhouse.c test_greenhouse.c ../../sdk/src/n8_util.c -o test_greenhouse
+          ./test_greenhouse
+          gcc -DEXPECT_MISMATCH -I../../sdk/include greenhouse.c test_greenhouse.c ../../sdk/src/n8_util.c -o test_greenhouse_control
+          ./test_greenhouse_control
+

@@ -1,0 +1,14 @@
+{
+  "id": 2,
+  "name": "hello",
+  "partition": "pvm_1",
+  "core": 0,
+  "payload": "hello.n8pv",
+  "mem_linear": 65536,
+  "stack": 8192,
+  "budget_ms": 2000,
+  "allowed_ipc": [],
+  "grants": [
+    {"kind": "store", "label": "query", "rights": "r"}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": 2,
+  "name": "ask",
+  "partition": "pvm_1",
+  "core": 0,
+  "payload": "ask.n8pv",
+  "mem_linear": 65536,
+  "stack": 8192,
+  "budget_ms": 2000,
+  "allowed_ipc": [1],
+  "grants": []
+}

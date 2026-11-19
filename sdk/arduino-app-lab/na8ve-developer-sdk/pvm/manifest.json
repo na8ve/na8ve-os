@@ -1,0 +1,9 @@
+{
+  "name": "sdk-starter",
+  "dom_id": 2,
+  "budget_ms": 50,
+  "mem_bytes": 65536,
+  "grants": ["store", "act"],
+  "allowed_ipc": [1]
+}
+

@@ -1,0 +1,19 @@
+name: LED Matrix Cognitive Visualizer
+description: Real-time 8x12 LED matrix cognitive turn and attention visualizer for Arduino Uno Q.
+ports:
+- 7000
+bricks:
+- arduino:web_ui
+- na8ve:cognitive_os:
+    variables:
+      NA8VE_MODEL_NAME: bx-1m-l2-t036
+      NA8VE_EXEC_MODE: recurrent
+      NA8VE_STATE_WIDTH: int32
+- na8ve:memory_graph:
+    variables:
+      NA8VE_DEFAULT_TIER: episodic
+      NA8VE_MAX_RECALL_HOPS: '2'
+- na8ve:act_policy:
+    variables:
+      NA8VE_ACT_COOLDOWN_MS: '100'
+icon: "💡"

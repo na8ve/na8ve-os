@@ -1,0 +1,62 @@
+################################################################################
+# na8ve-os ESP32-S3 Sandboxed Application Board Definitions (na8ve:esp32s3)
+################################################################################
+
+menu.grants=na8ve-os Capability Grants
+menu.target_slot=Target Deployment Slot
+menu.harden=Release Optimization
+
+# ------------------------------------------------------------------------------
+# Seeed XIAO ESP32-S3 Sense (na8ve-os)
+# ------------------------------------------------------------------------------
+xiao_esp32s3_na8ve.name=Seeed XIAO ESP32-S3 Sense (na8ve-os)
+
+# Native USB CDC-ACM Auto-Discovery (Espressif USB_DEVICE 0x303A:0x1001)
+xiao_esp32s3_na8ve.vid.0=0x303A
+xiao_esp32s3_na8ve.pid.0=0x1001
+xiao_esp32s3_na8ve.upload_port.0.vid=0x303A
+xiao_esp32s3_na8ve.upload_port.0.pid=0x1001
+
+# Serial Monitor: never toggle RTS into ROM bootloader mode; talk to na8ve-os console
+xiao_esp32s3_na8ve.serial.disableDTR=false
+xiao_esp32s3_na8ve.serial.disableRTS=true
+
+# Build & Memory Ceilings (64 KB linear memory, 8 KB stack, 64,512 B payload)
+xiao_esp32s3_na8ve.build.board=XIAO_ESP32S3_NA8VE_PVM
+xiao_esp32s3_na8ve.build.core=na8ve_pvm
+xiao_esp32s3_na8ve.build.variant=xiao_esp32s3_sense
+xiao_esp32s3_na8ve.build.mcu=wasm32
+xiao_esp32s3_na8ve.build.f_cpu=240000000L
+xiao_esp32s3_na8ve.build.linear_max=65536
+xiao_esp32s3_na8ve.build.stack_size=8192
+xiao_esp32s3_na8ve.build.budget_ms=2000
+
+# Upload Ceilings (64,512 B signed app payload limit, 65,536 B arena)
+xiao_esp32s3_na8ve.upload.tool=na8ve_upload
+xiao_esp32s3_na8ve.upload.tool.default=na8ve_upload
+xiao_esp32s3_na8ve.upload.tool.serial=na8ve_upload
+xiao_esp32s3_na8ve.upload.protocol=esptool
+xiao_esp32s3_na8ve.upload.speed=115200
+xiao_esp32s3_na8ve.upload.maximum_size=64512
+xiao_esp32s3_na8ve.upload.maximum_data_size=65536
+
+# Menu 1: Declared Capability Grants
+xiao_esp32s3_na8ve.menu.grants.broker_store_act=Model Broker + Store Read + Actuator Policy (ipc:1, store:r, act)
+xiao_esp32s3_na8ve.menu.grants.broker_store_act.build.grants_flags=--grant-ipc=1 --grant-store=query:r --grant-act --grant-seam
+xiao_esp32s3_na8ve.menu.grants.broker_only=Model Broker Only (ipc:1)
+xiao_esp32s3_na8ve.menu.grants.broker_only.build.grants_flags=--grant-ipc=1
+xiao_esp32s3_na8ve.menu.grants.store_only=Store Read Only (store:r)
+xiao_esp32s3_na8ve.menu.grants.store_only.build.grants_flags=--grant-store=query:r
+xiao_esp32s3_na8ve.menu.grants.pure_compute=Pure Compute Sandbox (No Grants)
+xiao_esp32s3_na8ve.menu.grants.pure_compute.build.grants_flags=
+
+# Menu 2: Target Deployment Slot
+xiao_esp32s3_na8ve.menu.target_slot.pvm1_flash=On-Chip App Slot (Standard)
+xiao_esp32s3_na8ve.menu.target_slot.pvm1_flash.upload.slot_flag=--slot=pvm_1
+
+# Menu 3: Release Optimization
+xiao_esp32s3_na8ve.menu.harden.enabled=Enabled (Size + Integrity Optimization)
+xiao_esp32s3_na8ve.menu.harden.enabled.build.harden_flags=--harden
+xiao_esp32s3_na8ve.menu.harden.dev_fast=Fast Dev Build (Strip Metadata Only)
+xiao_esp32s3_na8ve.menu.harden.dev_fast.build.harden_flags=--strip-only
+
