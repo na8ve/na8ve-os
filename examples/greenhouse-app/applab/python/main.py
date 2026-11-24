@@ -79,25 +79,56 @@ def run_cycle() -> dict:
     }
 
 
+def _reading_by_subject(event: dict, subject: str) -> dict:
+    telem = event.get("telemetry") or {}
+    for row in telem.get("readings") or []:
+        if row.get("subject") == subject or row.get("kind") == subject:
+            return row
+    return {}
+
+
 def matrix_line(event: dict) -> str:
-    """One event of the dashboard's stream, in the words the 12x8 matrix scrolls."""
+    """One live event of the dashboard's stream, in the words the 12x8 matrix scrolls."""
     if not event.get("ok"):
         return "enclave " + str(event.get("err", "offline"))[:40]
+    telem = event.get("telemetry") or {}
     parts = []
-    reading = (event.get("extra") or {}).get("reading")
-    if reading:
-        parts.append(f"{reading['temp_c']:.1f}C {reading['rh']:.0f}%RH")
+    gh = _reading_by_subject(event, "greenhouse")
+    if gh:
+        seg = []
+        if "temp_c" in gh:
+            seg.append(f"{float(gh['temp_c']):.1f}C")
+        if "humidity_pct" in gh:
+            seg.append(f"{float(gh['humidity_pct']):.0f}%RH")
+        if "lux" in gh:
+            seg.append(f"{int(round(float(gh['lux'])))}lx")
+        if seg:
+            parts.append(" ".join(seg))
+    tank = _reading_by_subject(event, "tank")
+    if "water" in tank:
+        parts.append("tank ok" if tank["water"] else "tank low")
+    door = _reading_by_subject(event, "door")
+    if "closed" in door:
+        parts.append("door shut" if door["closed"] else "door open")
     for act in event.get("actuators", []):
-        parts.append(f"{act.get('name')} {act.get('state')}")
-    parts.append(f"audit {(event.get('telemetry') or {}).get('audit_seq', 0)}")
+        name = act.get("name")
+        state = act.get("state")
+        if name and state and state not in ("off", "clear", "closed"):
+            parts.append(f"{name} {state}")
+    dev = _reading_by_subject(event, "device")
+    if "temp_c" in dev:
+        parts.append(f"cpu {float(dev['temp_c']):.1f}C")
+    parts.append(f"audit {telem.get('audit_seq', 0)}")
     return " | ".join(parts)
 
 
 def stream_to_matrix() -> None:
-    """Follows the dashboard's own event stream and sends the matrix each line that differs."""
+    """Follows the dashboard's own event stream and sends the matrix each live update."""
     from arduino.app_utils import Bridge
 
     last = None
+    last_sent = 0.0
+    time.sleep(1.5)
     while True:
         try:
             with urllib.request.urlopen(f"http://127.0.0.1:{PORT}/api/stream", timeout=30) as resp:
@@ -106,10 +137,12 @@ def stream_to_matrix() -> None:
                     if not line.startswith("data:"):
                         continue
                     text = matrix_line(json.loads(line[5:]))
-                    if text != last:
+                    now = time.monotonic()
+                    if text != last and (last is None or (now - last_sent) >= 1.5):
                         Bridge.call("show", text)
                         print(f"matrix: {text}", flush=True)
                         last = text
+                        last_sent = now
         except Exception as exc:  # the dashboard not up yet, or the sketch not answering
             print(f"matrix stream: {exc}", flush=True)
             time.sleep(3)
