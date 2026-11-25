@@ -110,10 +110,17 @@ def matrix_line(event: dict) -> str:
     door = _reading_by_subject(event, "door")
     if "closed" in door:
         parts.append("door shut" if door["closed"] else "door open")
+    seen_acts = {}
     for act in event.get("actuators", []):
         name = act.get("name")
         state = act.get("state")
-        if name and state and state not in ("off", "clear", "closed"):
+        if name and state:
+            seen_acts[name] = state
+    for name, state in (telem.get("act_states") or {}).items():
+        if name and state:
+            seen_acts[name] = state
+    for name, state in seen_acts.items():
+        if name in ("fan", "mister") or state not in ("off", "clear", "closed"):
             parts.append(f"{name} {state}")
     dev = _reading_by_subject(event, "device")
     if "temp_c" in dev:
